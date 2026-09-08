@@ -1,0 +1,47 @@
+name: Auto Commit
+
+on:
+  schedule:
+    # Run every day at 00:00 UTC
+    - cron: '0 0 * * *'
+  # Allow manual triggering
+  workflow_dispatch:
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Check for changes
+        id: check
+        run: |
+          if [[ -z $(git status -s) ]]; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit changes
+        if: steps.check.outputs.has_changes == 'true'
+        run: |
+          git add -A
+          git commit -m "chore: auto commit - $(date +'%Y-%m-%d %H:%M:%S')"
+          git push
+
+      - name: No changes to commit
+        if: steps.check.outputs.has_changes == 'false'
+        run: |
+          echo "No changes to commit"
