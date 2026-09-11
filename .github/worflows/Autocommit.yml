@@ -4,8 +4,7 @@ on:
   schedule:
     # Run every day at 00:00 UTC
     - cron: '0 0 * * *'
-  # Allow manual triggering
-  workflow_dispatch:
+    workflow_dispatch:
 
 jobs:
   auto-commit:
